@@ -151,7 +151,7 @@ class LDAS_io(object):
                             'coarsen_pert': b(lines[bl + 28]),
                             'xcorr': float(lines[bl + 29]),
                             'ycorr': float(lines[bl + 30]),
-                            'adapt': int(lines[bl + 31])})                
+                            'adapt': int(lines[bl + 31])})
             elif n_fields == 32 and n_blocks == 4:
                 res.append({'descr': s(lines[bl + 0]),
                             'species': int(lines[bl + 1]),
