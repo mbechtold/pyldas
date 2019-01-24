@@ -41,9 +41,12 @@ class paths(object):
             if sys == 'win':
                 # default path for local copies on a windows machine
                 self.root = r'D:\data_sets\LDAS_runs'
+            elif platform.node() == 'michel-Latitude-5580':
+                # default path for scratch mount
+                self.root = '/mnt/vsc_scratch/output/'
             else:
                 # default path on the HPC
-                self.root = '/scratch/leuven/320/vsc32046/output/TEST_RUNS'
+                self.root = '/scratch/leuven/317/vsc31786/output'
 
         # default experiment name
         if exp is None:
