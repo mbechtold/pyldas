@@ -9,6 +9,6 @@ domain='SMAP_EASEv2_M36_NORTH'
 #io = LDAS_io('ObsFcstAna', exp, domain)
 #io.bin2netcdf()
 
-io = LDAS_io('xhourly', exp)
+io = LDAS_io('xhourly', exp, domain)
 io.bin2netcdf()
 

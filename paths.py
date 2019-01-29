@@ -50,11 +50,11 @@ class paths(object):
 
         # default experiment name
         if exp is None:
-            exp = 'US_M36_SMOS_noDA_unscaled'
+            exp = 'SMAP_EASEv2_M36_NORTH_SCA_SMOSrw'
 
         # default domain name
         if domain is None:
-            domain = 'SMAP_EASEv2_M36_US'
+            domain = 'SMAP_EASEv2_M36_NORTH'
 
         self.exp_root = os.path.join(self.root,exp,'output',domain)
 

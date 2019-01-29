@@ -24,5 +24,7 @@ def find_files(path,searchstr):
         return None
     elif len(res) == 1:
         return res[0]
+    elif len(res) > 1 and searchstr=='obsparam':
+        return res[0]
     else:
         return np.array(res)

@@ -14,8 +14,8 @@ from myprojects.timeseries import calc_clim_harmonic, calc_pentadal_mean
 
 def plot_scaling_parameters():
 
-    fname = r"D:\data_sets\LDAS_runs\US_M36_SMOS_noDA_cal_unscaled\obs_scaling\7Thv_TbSM_001_SMOS_zscore_stats_2010_p37_2015_p36_hscale_0.00_W_9p_Nmin_20_A_p01_y2010.bin"
-
+    #fname = r"D:\data_sets\LDAS_runs\US_M36_SMOS_noDA_cal_unscaled\obs_scaling\7Thv_TbSM_001_SMOS_zscore_stats_2010_p37_2015_p36_hscale_0.00_W_9p_Nmin_20_A_p01_y2010.bin"
+    fname = "/mnt/vsc_scratch/output/SMAP_EASEv2_M36_NORTH_SCA_SMOSrw/output/SMAP_EASEv2_M36_NORTH/stats/z_score_clim/pentad/7Thv_TbSM_001_SMOS_zscore_stats_2010_p1_2017_p73_hscale_0.00_W_9p_Nmin_2_A_p37.bin"
     io = LDAS_io('scale')
 
     res = io.read_scaling_parameters(fname=fname)
