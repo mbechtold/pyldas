@@ -1,12 +1,13 @@
 import sys
-sys.path.append(r'/data/leuven/320/vsc32046/python')
+sys.path.append(r'/data/leuven/317/vsc31786/miniconda/bin/')
 
 from pyldas.interface import LDAS_io
 
-exp='US_M36_SMOS40_DA_cal_scl_prog_std'
+exp='SMAP_EASEv2_M36_NORTH_SCA_SMOSrw_DA'
+domain='SMAP_EASEv2_M36_NORTH'
 
-io = LDAS_io('ObsFcstAna', exp)
-io.bin2netcdf()
+#io = LDAS_io('ObsFcstAna', exp, domain)
+#io.bin2netcdf()
 
 io = LDAS_io('xhourly', exp)
 io.bin2netcdf()
