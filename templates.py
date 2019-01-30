@@ -300,7 +300,7 @@ def template_xhourly(out_collection_id):
                           ('Qair', '>f4'),
                           ('Psurf', '>f4'),
                           ('RainfC', '>f4'),
-                          ('RainfC', '>f4'),
+                          ('Rainf', '>f4'),
                           ('Snowf', '>f4'),
                           ('LWdown', '>f4'),
                           ('SWdown', '>f4'),
