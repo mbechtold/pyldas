@@ -293,6 +293,7 @@ def template_xhourly(out_collection_id):
 
     """
     
+    # out_collection_id 1: 44 variables
     if out_collection_id == 1:
         hdr = None
         length = None
@@ -336,11 +337,11 @@ def template_xhourly(out_collection_id):
                           ('snmelt', '>f4'),
                           ('lwup', '>f4'),
                           ('swup', '>f4'),
-                          ('snow_mass', '>f4'),
                           ('qinfil', '>f4'),
                           ('totalb', '>f4'),
                           ('waterbal', '>f4'),
                           ('energybal', '>f4')])
+    # out_collection_id 8: 6 variables
     elif out_collection_id == 8:
         hdr = None
         length = None
