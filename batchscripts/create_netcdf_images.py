@@ -12,8 +12,8 @@ domain='SMAP_EASEv2_M36_NORTH'
 io = LDAS_io('xhourly', exp, domain)
 io.bin2netcdf()
 
-io = LDAS_io('incr', exp, domain)
-io.bin2netcdf()
+#io = LDAS_io('incr', exp, domain)
+#io.bin2netcdf()
 
 #io = LDAS_io('ensstd', exp, domain)
 #io.bin2netcdf()

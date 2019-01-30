@@ -19,12 +19,14 @@ def find_files(path,searchstr):
             if f.find(searchstr) != -1:
                 res.append(os.path.join(root, f))
 
+    # multiple files in rc_out possible for
+    multilist = ['catbias','driver','mwRTMparam','catparam','ensprop','obslog','domdecomp','ensupd','obsparam']
     if len(res) == 0:
         print 'No files found which contain: "' + searchstr + '".'
         return None
     elif len(res) == 1:
         return res[0]
-    elif len(res) > 1 and searchstr=='obsparam':
+    elif len(res) > 1 and multilist.count(searchstr)>=1:
         return res[0]
     else:
         return np.array(res)

@@ -5,6 +5,8 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
+import f90nml
+
 from netCDF4 import Dataset, date2num
 from collections import OrderedDict
 
@@ -66,6 +68,7 @@ class LDAS_io(object):
                  domain=None):
 
         self.paths = paths(exp=exp, domain=domain)
+        self.driver = self.read_nml('driver')
 
         self.obsparam = self.read_obsparam()
         self.tilecoord = self.read_params('tilecoord')
@@ -90,8 +93,9 @@ class LDAS_io(object):
                 # TODO: Currently valid for 3-hourly data only! Times of the END of the 3hr periods are assigned!
                 # if self.param == 'xhourly':
                     # self.dates += pd.to_timedelta('2 hours')
-
-                self.dtype, self.hdr, self.length = get_template(self.param)
+                    
+                # MB collection ID added
+                self.dtype, self.hdr, self.length = get_template(self.param, self.driver['DRIVER_INPUTS']['out_collection_id'])
 
             else:
                 self.images = xr.open_dataset(self.files[0])
@@ -345,6 +349,15 @@ class LDAS_io(object):
 
         return data
 
+    def read_nml(self, nml, fname=None):
+        """ Read nml files (driver, ensprop, ensupd) """
+
+        if fname is None:
+            fname = find_files(self.paths.rc_out, nml)
+
+        data = f90nml.read(fname)
+        
+        return data
 
     def read_scaling_parameters(self, pentad=1, fname=None, tile_id=None):
         """

@@ -1,7 +1,7 @@
 
 import numpy as np
 
-def get_template(param):
+def get_template(param='tilecoord', out_collection_id=1):
     """
     Return templates for reading fortran binary files
 
@@ -32,7 +32,7 @@ def get_template(param):
         dtype, hdr, length = template_ObsFcstAna()
 
     elif (param == 'xhourly')|(param=='ensstd'):
-        dtype, hdr, length = template_xhourly()
+        dtype, hdr, length = template_xhourly(out_collection_id)
 
     elif param == 'scaling':
         dtype, hdr, length = template_scaling()
@@ -286,22 +286,71 @@ def template_ObsFcstAna():
 
     return dtype, hdr, length
 
-def template_xhourly():
+def template_xhourly(out_collection_id):
     """"
     Template for reading xhourly catchment output files
     TODO Include the possibility to specify the Collection ID. Currently: 8 / tavg
 
     """
-
-    hdr = None
-    length = None
-    dtype = np.dtype([('sm_surface', '>f4'),
-                      ('sm_rootzone', '>f4'),
-                      ('sm_profile', '>f4'),
-                      ('soil_temp_layer1', '>f4'),
-                      ('snow_mass', '>f4'),
-                      ('precipitation_total_surface_flux', '>f4')])
-
+    
+    if out_collection_id == 1:
+        hdr = None
+        length = None
+        dtype = np.dtype([('Tair', '>f4'),
+                          ('Qair', '>f4'),
+                          ('Psurf', '>f4'),
+                          ('RainfC', '>f4'),
+                          ('RainfC', '>f4'),
+                          ('Snowf', '>f4'),
+                          ('LWdown', '>f4'),
+                          ('SWdown', '>f4'),
+                          ('Wind', '>f4'),
+                          ('capac', '>f4'),
+                          ('srfexc', '>f4'),
+                          ('rzexc', '>f4'),
+                          ('catdef', '>f4'),
+                          ('sumwesn', '>f4'),
+                          ('sumsndz', '>f4'),
+                          ('ar1', '>f4'),
+                          ('ar2', '>f4'),
+                          ('asnow', '>f4'),
+                          ('sfmc', '>f4'),
+                          ('rzmc', '>f4'),
+                          ('prmc', '>f4'),
+                          ('tsurf', '>f4'),
+                          ('tp1', '>f4'),
+                          ('tpN', '>f4'),
+                          ('tpsn1', '>f4'),
+                          ('tpsnN', '>f4'),
+                          ('shflux', '>f4'),
+                          ('lhflux', '>f4'),
+                          ('ghflux', '>f4'),
+                          ('evap', '>f4'),
+                          ('eint', '>f4'),
+                          ('eveg', '>f4'),
+                          ('esoi', '>f4'),
+                          ('esno', '>f4'),
+                          ('runoff', '>f4'),
+                          ('runsrf', '>f4'),
+                          ('bflow', '>f4'),
+                          ('snmelt', '>f4'),
+                          ('lwup', '>f4'),
+                          ('swup', '>f4'),
+                          ('snow_mass', '>f4'),
+                          ('qinfil', '>f4'),
+                          ('totalb', '>f4'),
+                          ('waterbal', '>f4'),
+                          ('energybal', '>f4')])
+    elif out_collection_id == 8:
+        hdr = None
+        length = None
+        dtype = np.dtype([('sm_surface', '>f4'),
+                          ('sm_rootzone', '>f4'),
+                          ('sm_profile', '>f4'),
+                          ('soil_temp_layer1', '>f4'),
+                          ('snow_mass', '>f4'),
+                          ('precipitation_total_surface_flux', '>f4')])    
+    
     return dtype, hdr, length
 
 def template_smosL4SMaup():
