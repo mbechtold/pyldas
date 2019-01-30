@@ -14,31 +14,37 @@ from pyldas.interface import LDAS_io
 
 def plot_catparams():
 
-    outpath = r'D:\work\LDAS\2018-01_catparams'
+    outpath = '/home/michel/KULeuven/FIG_tmp/00python'
 
-    exp = 'US_M36_SMOS40_DA_cal_scaled'
+    exp = 'SMAP_EASEv2_M36_NORTH_SCA_SMOSrw_DA'
+    domain='SMAP_EASEv2_M36_NORTH'
 
     tc = LDAS_io().tilecoord
     tg = LDAS_io().tilegrids
 
     tc.i_indg -= tg.loc['domain','i_offg'] # col / lon
     tc.j_indg -= tg.loc['domain','j_offg'] # row / lat
-
-    lons = np.unique(tc.com_lon.values)
+    
+    # MB: bug fix
+    # for some domains (due to sea pixels?) ind_lon with greater index than number of unique lons
+    # original: lons = np.unique(tc.com_lon.values)
+    nlon = tg.N_lon.domain
+    lons = np.linspace(np.min(np.unique(tc.com_lon.values)),np.max(np.unique(tc.com_lon.values)),nlon)
+    
     lats = np.unique(tc.com_lat.values)[::-1]
 
     lons, lats = np.meshgrid(lons, lats)
 
-    llcrnrlat = 24
-    urcrnrlat = 51
-    llcrnrlon = -128
-    urcrnrlon = -64
+    llcrnrlat = 40
+    urcrnrlat = 75
+    llcrnrlon = -140
+    urcrnrlon = -40
     figsize = (20, 10)
     # cbrange = (-20, 20)
     cmap = 'jet'
     fontsize = 20
 
-    params = LDAS_io(exp=exp).read_params('catparam')
+    params = LDAS_io(exp=exp, domain=domain).read_params('catparam')
 
     for param in params:
 
@@ -87,8 +93,13 @@ def plot_rtm_parameters():
 
     tc.i_indg -= tg.loc['domain','i_offg'] # col / lon
     tc.j_indg -= tg.loc['domain','j_offg'] # row / lat
-
-    lons = np.unique(tc.com_lon.values)
+    
+    # MB: bug fix
+    # for some domains (due to sea pixels?) ind_lon with greater index than number of unique lons
+    # original: lons = np.unique(tc.com_lon.values)
+    nlon = tg.N_lon.domain
+    lons = np.linspace(np.min(np.unique(tc.com_lon.values)),np.max(np.unique(tc.com_lon.values)),nlon)
+    
     lats = np.unique(tc.com_lat.values)[::-1]
 
     lons, lats = np.meshgrid(lons, lats)
@@ -157,8 +168,13 @@ def plot_rtm_parameter_differences():
 
     tc.i_indg -= tg.loc['domain','i_offg'] # col / lon
     tc.j_indg -= tg.loc['domain','j_offg'] # row / lat
-
-    lons = np.unique(tc.com_lon.values)
+    
+    # MB: bug fix
+    # for some domains (due to sea pixels?) ind_lon with greater index than number of unique lons
+    # original: lons = np.unique(tc.com_lon.values)
+    nlon = tg.N_lon.domain
+    lons = np.linspace(np.min(np.unique(tc.com_lon.values)),np.max(np.unique(tc.com_lon.values)),nlon)
+    
     lats = np.unique(tc.com_lat.values)[::-1]
 
     lons, lats = np.meshgrid(lons, lats)

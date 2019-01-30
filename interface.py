@@ -521,13 +521,12 @@ class LDAS_io(object):
 
         # get variable names from fortran reader template
         variables = get_template(self.param)[0].names
-
-        # MB ind_lon with greater index than lons dimension, corrected, but not nice
-        # lons = np.sort(self.tilecoord.groupby('i_indg').first()['com_lon'])
-        lons = np.sort(np.unique(self.tilecoord.com_lon.values))
-        dlon = np.median(lons[1:np.shape(lons)[0]] - lons[0:(np.shape(lons)[0]-1)])
-        nlon = np.round(np.max(self.tilecoord.com_lon.values)-np.min(self.tilecoord.com_lon.values))/dlon
-        lons = np.linspace(np.min(lons),np.max(lons),nlon)
+        
+        # MB: bug fix
+        # for some domains (due to sea pixels?) ind_lon with greater index than number of unique lons
+        # original: lons = np.unique(tc.com_lon.values)
+        nlon = self.tilegrids.N_lon.domain
+        lons = np.linspace(np.min(np.unique(self.tilecoord.com_lon.values)),np.max(np.unique(self.tilecoord.com_lon.values)),nlon)
         
         lats = np.sort(self.tilecoord.groupby('j_indg').first()['com_lat'])[::-1]
         dates = self.dates
