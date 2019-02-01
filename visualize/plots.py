@@ -293,7 +293,10 @@ def plot_ease_img(data,tag,
 
 def plot_grid_coord_indices():
 
-    io = LDAS_io('ObsFcstAna', exp='US_M36_SMOS40_noDA_cal_scaled')
+    exp = 'SMAP_EASEv2_M36_NORTH_SCA_SMOSrw_DA'
+    domain='SMAP_EASEv2_M36_NORTH'
+    
+    io = LDAS_io('ObsFcstAna', exp=exp, domain=domain)
 
     lats = io.images.lat.values
     lons = io.images.lon.values
@@ -358,8 +361,11 @@ def plot_model_image():
 
 def plot_innov(spc=8, row=35, col=65):
 
-    ts_scl = LDAS_io('ObsFcstAna',exp='US_M36_SMOS_noDA_scaled').timeseries
-    ts_usc = LDAS_io('ObsFcstAna',exp='US_M36_SMOS_noDA_unscaled').timeseries
+    exp = 'SMAP_EASEv2_M36_NORTH_SCA_SMOSrw_DA'
+    domain='SMAP_EASEv2_M36_NORTH'
+    
+    ts_scl = LDAS_io('ObsFcstAna', exp=exp, domain=domain).timeseries
+    ts_usc = LDAS_io('ObsFcstAna', exp=exp, domain=domain).timeseries
 
     plt.figure(figsize=(18,11))
 

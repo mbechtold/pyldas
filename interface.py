@@ -70,7 +70,11 @@ class LDAS_io(object):
         self.paths = paths(exp=exp, domain=domain)
         self.driver = self.read_nml('driver')
 
-        self.obsparam = self.read_obsparam()
+        try:
+            self.obsparam = self.read_obsparam()
+        except:
+            print 'No obsparam file. This is just an LSM run without observations.'
+            
         self.tilecoord = self.read_params('tilecoord')
         self.tilegrids = self.read_params('tilegrids')
 
