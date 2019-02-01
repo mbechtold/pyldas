@@ -72,8 +72,8 @@ class LDAS_io(object):
         try:
           self.obsparam = self.read_obsparam()
         except:
-          pass
-
+            print 'No obsparam file. This is just an LSM run without observations.'
+            
         self.tilecoord = self.read_params('tilecoord')
         self.tilegrids = self.read_params('tilegrids')
 
