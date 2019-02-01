@@ -69,8 +69,11 @@ class LDAS_io(object):
 
         self.paths = paths(exp=exp, domain=domain)
         self.driver = self.read_nml('driver')
+        try:
+          self.obsparam = self.read_obsparam()
+        except:
+          pass
 
-        self.obsparam = self.read_obsparam()
         self.tilecoord = self.read_params('tilecoord')
         self.tilegrids = self.read_params('tilegrids')
 
