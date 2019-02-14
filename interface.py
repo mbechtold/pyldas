@@ -76,13 +76,20 @@ class LDAS_io(object):
             
         self.tilecoord = self.read_params('tilecoord')
         self.tilegrids = self.read_params('tilegrids')
-
-        self.grid = EASE2(tilecoord=self.tilecoord, tilegrids=self.tilegrids)
+        
+        if self.tilegrids.gridtype['global'].count('M36')>=1:
+            res=36
+        elif self.tilegrids.gridtype['global'].count('M09')>=1:
+            res=9
+        else:
+            res=3
+            
+        self.grid = EASE2(res=res, tilecoord=self.tilecoord, tilegrids=self.tilegrids)
 
         self.param = param
         if param is not None:
 
-            if param == 'xhourly':
+            if (param == 'xhourly') or (param == 'daily'):
                 path = self.paths.__getattribute__('cat')
             else:
                 path = self.paths.__getattribute__('exp_root')
@@ -91,7 +98,10 @@ class LDAS_io(object):
 
             if self.files[0].find('images.nc') == -1:
                 print 'NetCDF image cube not yet created. Use method "bin2netcdf".'
-                self.dates = pd.to_datetime([f[-18:-5] for f in self.files], format='%Y%m%d_%H%M').sort_values()
+                if (param == 'xhourly'):
+                    self.dates = pd.to_datetime([f[-18:-5] for f in self.files], format='%Y%m%d_%H%M').sort_values()
+                elif (param == 'daily'):
+                    self.dates = pd.to_datetime([f[-12:-4] for f in self.files], format='%Y%m%d').sort_values()
 
                 # TODO: Currently valid for 3-hourly data only! Times of the END of the 3hr periods are assigned!
                 # if self.param == 'xhourly':
@@ -337,7 +347,8 @@ class LDAS_io(object):
 
         if fname is None:
             fname = find_files(self.paths.rc_out, param)
-
+            
+        print 'Reading "', fname, '" ...'
         reg_ftags = False if param == 'tilegrids' else True
 
         dtype, hdr, length = get_template(param)
@@ -404,7 +415,7 @@ class LDAS_io(object):
 
         return data
 
-    def read_image(self, yr, mo, da, hr, mi, species=None):
+    def read_image(self, yr, mo, da, hr=None, mi=None, species=None):
         """"
         Read an image for a given date/time(/species)
         If a netCDF file has been created with self.bin2netcdf, the image will be read from this file,
@@ -421,7 +432,10 @@ class LDAS_io(object):
 
         # If netCDF file has been created/loaded, use xarray indexing functions
         if hasattr(self, 'images'):
-            datestr = '%04i-%02i-%02i %02i:%02i' % (yr, mo, da, hr, mi)
+            if hr is not None:
+                datestr = '%04i-%02i-%02i %02i:%02i' % (yr, mo, da, hr, mi)
+            else:
+                datestr = '%04i-%02i-%02i' % (yr, mo, da)
             if species is not None:
                 img = self.images.sel(species=species, time=datestr).values
             else:
@@ -429,7 +443,10 @@ class LDAS_io(object):
 
         # Otherwise, read from fortran binary
         else:
-            datestr = '%04i%02i%02i_%02i%02i' % (yr, mo, da, hr, mi)
+            if hr is not None:
+                datestr = '%04i%02i%02i_%02i%02i' % (yr, mo, da, hr, mi)
+            else:
+                datestr = '%04i%02i%02i' % (yr, mo, da)
             fname = [f for f in self.files if f.find(datestr) != -1]
 
             if len(fname) == 0:
@@ -541,10 +558,9 @@ class LDAS_io(object):
         # MB: bug fix
         # for some domains (due to sea pixels?) ind_lon with greater index than number of unique lons
         # original: lons = np.unique(tc.com_lon.values)
-        nlon = self.tilegrids.N_lon.domain
-        lons = np.linspace(np.min(np.unique(self.tilecoord.com_lon.values)),np.max(np.unique(self.tilecoord.com_lon.values)),nlon)
-        
-        lats = np.sort(self.tilecoord.groupby('j_indg').first()['com_lat'])[::-1]
+        # lats = np.sort(self.tilecoord.groupby('j_indg').first()['com_lat'])[::-1]
+        lons = self.grid.londim[np.min(self.tilecoord.i_indg):(np.max(self.tilecoord.i_indg)+1)]
+        lats = self.grid.latdim[np.min(self.tilecoord.j_indg):(np.max(self.tilecoord.j_indg)+1)]
         dates = self.dates
 
         # Innovation file data has an additional 'species' dimension
@@ -572,7 +588,10 @@ class LDAS_io(object):
         for i,dt in enumerate(dates):
             print '%d / %d' % (i, len(dates))
 
-            data = self.read_image(dt.year,dt.month,dt.day,dt.hour,dt.minute)
+            if self.param != 'daily':
+                data = self.read_image(dt.year,dt.month,dt.day,dt.hour,dt.minute)
+            else:
+                data = self.read_image(dt.year,dt.month,dt.day)
             if len(data) == 0:
                 continue
 

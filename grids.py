@@ -99,4 +99,6 @@ class EASE2(EASE2_grid):
         tilenum = np.where((self.tilecoord['i_indg'] == col)&
                            (self.tilecoord['j_indg'] == row))[0][0]
         return tilenum + 1
+    
+    def
 

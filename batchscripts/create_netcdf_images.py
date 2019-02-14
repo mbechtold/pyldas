@@ -6,11 +6,19 @@ from pyldas.interface import LDAS_io
 exp='SMAP_EASEv2_M36_NORTH_SCA_SMOSrw_DA'
 domain='SMAP_EASEv2_M36_NORTH'
 
+exp='SMAPL4v3_M09_PM'
+domain='SMAP_EASEv2_M09'
+
+
 #io = LDAS_io('ObsFcstAna', exp, domain)
 #io.bin2netcdf()
 
-io = LDAS_io('xhourly', exp, domain)
+io = LDAS_io('daily', exp, domain)
+
 io.bin2netcdf()
+
+#io = LDAS_io('xhourly', exp, domain)
+#io.bin2netcdf()
 
 #io = LDAS_io('incr', exp, domain)
 #io.bin2netcdf()

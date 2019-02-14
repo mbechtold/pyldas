@@ -18,9 +18,9 @@ def plot_catparams():
 
     exp = 'SMAP_EASEv2_M36_NORTH_SCA_SMOSrw_DA'
     domain='SMAP_EASEv2_M36_NORTH'
-
-    tc = LDAS_io().tilecoord
-    tg = LDAS_io().tilegrids
+    io = LDAS_io('tilecoord', exp, domain)
+    tc = io.tilecoord
+    tg = io.tilegrids
 
     tc.i_indg -= tg.loc['domain','i_offg'] # col / lon
     tc.j_indg -= tg.loc['domain','j_offg'] # row / lat
@@ -28,10 +28,9 @@ def plot_catparams():
     # MB: bug fix
     # for some domains (due to sea pixels?) ind_lon with greater index than number of unique lons
     # original: lons = np.unique(tc.com_lon.values)
-    nlon = tg.N_lon.domain
-    lons = np.linspace(np.min(np.unique(tc.com_lon.values)),np.max(np.unique(tc.com_lon.values)),nlon)
-    
-    lats = np.unique(tc.com_lat.values)[::-1]
+    # lats = np.sort(self.tilecoord.groupby('j_indg').first()['com_lat'])[::-1]
+    lons = io.grid.londim[np.min(io.tilecoord.i_indg):(np.max(io.tilecoord.i_indg)+1)]
+    lats = io.grid.latdim[np.min(io.tilecoord.j_indg):(np.max(io.tilecoord.j_indg)+1)]
 
     lons, lats = np.meshgrid(lons, lats)
 
@@ -87,9 +86,12 @@ def plot_rtm_parameters():
     root = r'C:\Users\u0116961\Documents\work\LDASsa\2018-02_scaling\RTM_parameters'
 
     experiments = ['US_M36_SMOS_DA_calibrated_scaled', 'US_M36_SMOS_DA_nocal_scaled_harmonic']
-
-    tc = LDAS_io().tilecoord
-    tg = LDAS_io().tilegrids
+    
+    exp = 'SMAP_EASEv2_M36_NORTH_SCA_SMOSrw_DA'
+    domain='SMAP_EASEv2_M36_NORTH'
+    io = LDAS_io('tilecoord', exp, domain)
+    tc = io.tilecoord
+    tg = io.tilegrids
 
     tc.i_indg -= tg.loc['domain','i_offg'] # col / lon
     tc.j_indg -= tg.loc['domain','j_offg'] # row / lat
@@ -97,10 +99,9 @@ def plot_rtm_parameters():
     # MB: bug fix
     # for some domains (due to sea pixels?) ind_lon with greater index than number of unique lons
     # original: lons = np.unique(tc.com_lon.values)
-    nlon = tg.N_lon.domain
-    lons = np.linspace(np.min(np.unique(tc.com_lon.values)),np.max(np.unique(tc.com_lon.values)),nlon)
-    
-    lats = np.unique(tc.com_lat.values)[::-1]
+    # lats = np.sort(self.tilecoord.groupby('j_indg').first()['com_lat'])[::-1]
+    lons = io.grid.londim[np.min(io.tilecoord.i_indg):(np.max(io.tilecoord.i_indg)+1)]
+    lats = io.grid.latdim[np.min(io.tilecoord.j_indg):(np.max(io.tilecoord.j_indg)+1)]
 
     lons, lats = np.meshgrid(lons, lats)
 
@@ -163,8 +164,11 @@ def plot_rtm_parameter_differences():
 
     outpath = r'C:\Users\u0116961\Documents\work\LDASsa\2018-02_scaling\RTM_parameters\differences'
 
-    tc = LDAS_io().tilecoord
-    tg = LDAS_io().tilegrids
+    exp = 'SMAP_EASEv2_M36_NORTH_SCA_SMOSrw_DA'
+    domain='SMAP_EASEv2_M36_NORTH'
+    io = LDAS_io('tilecoord', exp, domain)
+    tc = io.tilecoord
+    tg = io.tilegrids
 
     tc.i_indg -= tg.loc['domain','i_offg'] # col / lon
     tc.j_indg -= tg.loc['domain','j_offg'] # row / lat
@@ -172,10 +176,9 @@ def plot_rtm_parameter_differences():
     # MB: bug fix
     # for some domains (due to sea pixels?) ind_lon with greater index than number of unique lons
     # original: lons = np.unique(tc.com_lon.values)
-    nlon = tg.N_lon.domain
-    lons = np.linspace(np.min(np.unique(tc.com_lon.values)),np.max(np.unique(tc.com_lon.values)),nlon)
-    
-    lats = np.unique(tc.com_lat.values)[::-1]
+    # lats = np.sort(self.tilecoord.groupby('j_indg').first()['com_lat'])[::-1]
+    lons = io.grid.londim[np.min(io.tilecoord.i_indg):(np.max(io.tilecoord.i_indg)+1)]
+    lats = io.grid.latdim[np.min(io.tilecoord.j_indg):(np.max(io.tilecoord.j_indg)+1)]
 
     lons, lats = np.meshgrid(lons, lats)
 

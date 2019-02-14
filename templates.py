@@ -33,6 +33,9 @@ def get_template(param='tilecoord', out_collection_id=1):
 
     elif (param == 'xhourly')|(param=='ensstd'):
         dtype, hdr, length = template_xhourly(out_collection_id)
+    # same template for daily ...
+    elif (param == 'daily'):
+        dtype, hdr, length = template_xhourly(out_collection_id)
 
     elif param == 'scaling':
         dtype, hdr, length = template_scaling()
