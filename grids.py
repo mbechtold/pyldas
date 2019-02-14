@@ -100,5 +100,3 @@ class EASE2(EASE2_grid):
                            (self.tilecoord['j_indg'] == row))[0][0]
         return tilenum + 1
     
-    def
-
