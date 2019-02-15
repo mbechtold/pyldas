@@ -553,7 +553,7 @@ class LDAS_io(object):
         out_file = os.path.join(out_path,self.param + '_images.nc')
 
         # get variable names from fortran reader template
-        variables = get_template(self.param)[0].names
+        variables = get_template(self.param, self.driver['DRIVER_INPUTS']['out_collection_id'])[0].names
         
         # MB: bug fix
         # for some domains (due to sea pixels?) ind_lon with greater index than number of unique lons

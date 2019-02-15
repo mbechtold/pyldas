@@ -348,12 +348,48 @@ def template_xhourly(out_collection_id):
     elif out_collection_id == 8:
         hdr = None
         length = None
-        dtype = np.dtype([('sm_surface', '>f4'),
-                          ('sm_rootzone', '>f4'),
-                          ('sm_profile', '>f4'),
-                          ('soil_temp_layer1', '>f4'),
+        dtype = np.dtype([('sfmc', '>f4'),
+                          ('rzmc', '>f4'),
+                          ('prmc', '>f4'),
+                          ('tp1', '>f4'),
                           ('snow_mass', '>f4'),
                           ('precipitation_total_surface_flux', '>f4')])    
+
+    # out_collection_id 12: 2 variables tavg
+    elif out_collection_id == 12:
+        hdr = None
+        length = None
+        dtype = np.dtype([('SWE', '>f4'),
+                          ('precipitation_total_surface_flux', '>f4')])      
+        ''' inst
+        dtype = np.dtype([('sfmc', '>f4'),
+                          ('rzmc', '>f4'),
+                          ('tsurf', '>f4'),
+                          ('tp1', '>f4'),
+                          ('Tair', '>f4'),
+                          ('lai', '>f4'),
+                          ('catdef', '>f4'),
+                          ('ar1', '>f4')])      
+        '''
+    
+    # out_collection_id 13: 14 variables
+    elif out_collection_id == 13:
+        hdr = None
+        length = None
+        dtype = np.dtype([('srfexc', '>f4'),
+                          ('rzexc', '>f4'),
+                          ('catdef', '>f4'),
+                          ('ar1', '>f4'),
+                          ('ar2', '>f4'),
+                          ('sfmc', '>f4'),
+                          ('rzmc', '>f4'),
+                          ('tsurf', '>f4'),
+                          ('tp1', '>f4'),
+                          ('tpN', '>f4'),
+                          ('shflux', '>f4'),
+                          ('lhflux', '>f4'),
+                          ('evap', '>f4'),
+                          ('runoff', '>f4')])  
     
     return dtype, hdr, length
 
