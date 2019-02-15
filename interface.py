@@ -613,10 +613,10 @@ class LDAS_io(object):
 
                 if self.param == 'ObsFcstAna':
                     img[ind_spc,ind_lat,ind_lon] = tmp_img
-                    dataset.variables[var][:,:,:,i] = img
+                    dataset.variables[var][i,:,:,:] = img
                 else:
                     img[ind_lat,ind_lon] = tmp_img
-                    dataset.variables[var][:,:,i] = img
+                    dataset.variables[var][i,:,:] = img
 
         # Save file to disk and loat it as xarray Dataset into the class variable space
         dataset.close()
