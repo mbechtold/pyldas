@@ -579,9 +579,9 @@ class LDAS_io(object):
                 return
 
             spc = pd.DataFrame(self.obsparam)['species'].values.astype('uint8')
-            dimensions = OrderedDict([('species',spc), ('lat',lats), ('lon',lons), ('time',dates)])
+            dimensions = OrderedDict([('time',dates), ('species',spc), ('lat',lats), ('lon',lons)])
         else:
-            dimensions = OrderedDict([('lat',lats), ('lon',lons), ('time',dates)])
+            dimensions = OrderedDict([('time',dates), ('lat',lats), ('lon',lons)])
 
         dataset = self.ncfile_init(out_file, dimensions, variables)
 
