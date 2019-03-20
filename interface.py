@@ -98,10 +98,10 @@ class LDAS_io(object):
 
             if self.files[0].find('images.nc') == -1:
                 print 'NetCDF image cube not yet created. Use method "bin2netcdf".'
-                if (param == 'xhourly'):
-                    self.dates = pd.to_datetime([f[-18:-5] for f in self.files], format='%Y%m%d_%H%M').sort_values()
-                elif (param == 'daily'):
+                if (param == 'daily'):
                     self.dates = pd.to_datetime([f[-12:-4] for f in self.files], format='%Y%m%d').sort_values()
+                else:
+                    self.dates = pd.to_datetime([f[-18:-5] for f in self.files], format='%Y%m%d_%H%M').sort_values()
 
                 # TODO: Currently valid for 3-hourly data only! Times of the END of the 3hr periods are assigned!
                 # if self.param == 'xhourly':
