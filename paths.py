@@ -40,7 +40,7 @@ class paths(object):
             if platform.system() == 'Windows':
                 # default path for local copies on a windows machine
                 self.root = os.path.join('D:', 'data_sets', 'LDAS_runs')
-            elif platform.system() == 'michel-Latitude-5580':
+            elif platform.node() == 'michel-Latitude-5580':
                 # default path for scratch mount
                 self.root = os.path.join('/', 'mnt', 'vsc_scratch','output')
             else:
