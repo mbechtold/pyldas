@@ -125,8 +125,6 @@ class LDAS_io(object):
             # if self.param == 'xhourly':
                 # self.dates += pd.to_timedelta('2 hours')
 
-            self.dtype, self.hdr, self.length = get_template(self.param)
-
 
     def read_obsparam(self):
         """ Read the 'obsparam' file. """
@@ -676,6 +674,7 @@ class LDAS_io(object):
 
         for i,dt in enumerate(dates):
             logging.info('%d / %d' % (i, len(dates)))
+
 
 
             if self.param != 'daily':
