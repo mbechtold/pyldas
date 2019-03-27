@@ -121,9 +121,6 @@ class LDAS_io(object):
                     self.timeseries = xr.open_dataset(self.files[0])
                     self.files = self.files[1::]
 
-            self.files.sort()
-            self.dates = pd.to_datetime([f[-18:-5] for f in self.files], format='%Y%m%d_%H%M')
-
             # TODO: Currently valid for 3-hourly data only! Times of the END of the 3hr periods are assigned!
             # if self.param == 'xhourly':
                 # self.dates += pd.to_timedelta('2 hours')
