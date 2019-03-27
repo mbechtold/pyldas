@@ -677,13 +677,14 @@ class LDAS_io(object):
         for i,dt in enumerate(dates):
             logging.info('%d / %d' % (i, len(dates)))
 
-            data = self.read_image(dt.year, dt.month, dt.day, dt.hour, dt.minute)
-            data = data.loc[data.index.intersection(ind_img), :]
 
             if self.param != 'daily':
                 data = self.read_image(dt.year,dt.month,dt.day,dt.hour,dt.minute)
             else:
                 data = self.read_image(dt.year,dt.month,dt.day)
+
+            data = data.loc[data.index.intersection(ind_img), :]
+
             if len(data) == 0:
                 continue
 
