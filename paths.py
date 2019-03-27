@@ -37,16 +37,15 @@ class paths(object):
     def __init__(self, root=None, exp=None, domain=None):
 
         if root is None:
-            sys = 'win' if platform.system() == 'Windows' else 'lnx'
-            if sys == 'win':
+            if platform.system() == 'Windows':
                 # default path for local copies on a windows machine
-                self.root = r'D:\data_sets\LDAS_runs'
-            elif platform.node() == 'michel-Latitude-5580':
+                self.root = os.path.join('D:', 'data_sets', 'LDAS_runs')
+            elif platform.system() == 'michel-Latitude-5580':
                 # default path for scratch mount
-                self.root = '/mnt/vsc_scratch/output/'
+                self.root = os.path.join('/', 'mnt', 'vsc_scratch','output')
             else:
                 # default path on the HPC
-                self.root = '/scratch/leuven/317/vsc31786/output'
+                self.root = os.path.join('/', 'scratch', 'leuven', '317', 'vsc31786', 'output')
 
         # default experiment name
         if exp is None:
