@@ -48,7 +48,8 @@ class EASE2(EASE2_grid):
             if res == 36000:
                 map_scale = 36032.220840584
             elif res == 9000:
-                map_scale = 9008.055210146
+                # MB last digit decreased by 1 to get correct number of lons
+                map_scale = 9008.055210145
             elif res == 3000:
                 map_scale = 3002.6850700487
         else:
@@ -56,8 +57,8 @@ class EASE2(EASE2_grid):
 
         self.tilecoord = tilecoord
         self.tilegrids = tilegrids
-
-        super(EASE2, self).__init__(res, map_scale=map_scale)
+        # MB: map_scale in current package only applies to y direction ... force res to be eq. map_scale
+        super(EASE2, self).__init__(map_scale, map_scale=map_scale)
 
     def colrow2tileid(self, col, row):
 

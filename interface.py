@@ -88,6 +88,9 @@ class LDAS_io(object):
             res=3
             
         self.grid = EASE2(res=res, tilecoord=self.tilecoord, tilegrids=self.tilegrids)
+        # MB: latmin latmax of global grid smaller in LDAS --> trim to fit
+        self.grid.latdim = np.delete(self.grid.latdim, np.vstack((self.grid.latdim>self.grid.tilegrids.ur_lat[0],self.grid.latdim<self.grid.tilegrids.ll_lat[0])).any(axis=0))
+
 
         self.param = param
         if param is not None:
@@ -110,7 +113,7 @@ class LDAS_io(object):
                 # if self.param == 'xhourly':
                     # self.dates += pd.to_timedelta('2 hours')
                     
-                # MB collection ID added
+                # MB arg added: collection ID
                 self.dtype, self.hdr, self.length = get_template(self.param, self.driver['DRIVER_INPUTS']['out_collection_id'])
             else:
                 self.images = xr.open_dataset(self.files[0])
@@ -620,28 +623,32 @@ class LDAS_io(object):
         variables = get_template(self.param, self.driver['DRIVER_INPUTS']['out_collection_id'])[0].names
         # If specified, only generate netCDF file for specific date range
         
-        # MB: bug fix
-        # for some domains (due to sea pixels?) ind_lon with greater index than number of unique lons
-        # original: lons = np.unique(tc.com_lon.values)
-        # lats = np.sort(self.tilecoord.groupby('j_indg').first()['com_lat'])[::-1]
-        lons = self.grid.londim[np.min(self.tilecoord.i_indg):(np.max(self.tilecoord.i_indg)+1)]
-        lats = self.grid.latdim[np.min(self.tilecoord.j_indg):(np.max(self.tilecoord.j_indg)+1)]
         dates = self.dates
         if date_from is not None:
             dates = dates[dates >= pd.to_datetime(date_from)]
         if date_to is not None:
             dates = dates[dates <= pd.to_datetime(date_to)]
 
-        filelons = np.sort(self.tilecoord.groupby('i_indg').first()['com_lon'])
-        filelats = np.sort(self.tilecoord.groupby('j_indg').first()['com_lat'])[::-1]
-
+        # MB: use lonmin/max latmin/max from grid and *not* from tilecoord due to differences in last digits
+        lonmin = self.grid.londim[np.argmin(np.abs(self.grid.londim-lonmin))]
+        lonmax = self.grid.londim[np.argmin(np.abs(self.grid.londim-lonmax))]
+        latmin = self.grid.latdim[np.argmin(np.abs(self.grid.latdim-latmin))]
+        latmax = self.grid.latdim[np.argmin(np.abs(self.grid.latdim-latmax))]
         # Clip region based on specified coordinate boundaries
         ind_img = self.tilecoord[(self.tilecoord['com_lon']>=lonmin)&(self.tilecoord['com_lon']<=lonmax)&
                                  (self.tilecoord['com_lat']<=latmax)&(self.tilecoord['com_lat']>=latmin)].index
-        lonmin = self.tilecoord.loc[ind_img, 'com_lon'].values.min()
-        lonmax = self.tilecoord.loc[ind_img, 'com_lon'].values.max()
-        latmin = self.tilecoord.loc[ind_img, 'com_lat'].values.min()
-        latmax = self.tilecoord.loc[ind_img, 'com_lat'].values.max()
+
+        filelons = self.grid.londim[np.min(self.tilecoord.i_indg):(np.max(self.tilecoord.i_indg)+1)]
+        filelats = self.grid.latdim[np.min(self.tilecoord.j_indg):(np.max(self.tilecoord.j_indg)+1)]
+
+        # Check if i_indg and j_indg are consistent with python grid
+        filelons2 = self.grid.londim[np.argmin(np.abs(self.grid.londim-np.min(self.tilecoord.com_lon))):(np.argmin(np.abs(self.grid.londim-np.max(self.tilecoord.com_lon)))+1)]
+        filelats2 = self.grid.londim[np.argmin(np.abs(self.grid.londim-np.min(self.tilecoord.com_lon))):(np.argmin(np.abs(self.grid.londim-np.max(self.tilecoord.com_lon)))+1)]
+        if np.array_equal(filelons,filelons2)==False or np.array_equal(filelons,filelons2)==False:
+            logging.error('i_indg and j_indg not consistent with genereated EASEv2 grid, possible solution: decrese map_scale in grids.py at last digit like done for M09')
+            return
+        # Check end
+
         lons = filelons[(filelons >= lonmin) & (filelons <= lonmax)]
         lats = filelats[(filelats >= latmin) & (filelats <= latmax)]
         i_offg_2 = np.where(filelons >= lonmin)[0][0]
@@ -677,10 +684,10 @@ class LDAS_io(object):
 
 
 
-            if self.param != 'daily':
-                data = self.read_image(dt.year,dt.month,dt.day,dt.hour,dt.minute)
-            else:
+            if self.param == 'daily':
                 data = self.read_image(dt.year,dt.month,dt.day)
+            else:
+                data = self.read_image(dt.year,dt.month,dt.day,dt.hour,dt.minute)
 
             data = data.loc[data.index.intersection(ind_img), :]
 

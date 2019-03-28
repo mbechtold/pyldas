@@ -34,10 +34,7 @@ def get_template(param='tilecoord', out_collection_id=1):
     elif param == 'ObsFcstAna':
         dtype, hdr, length = template_ObsFcstAna()
 
-    elif (param == 'xhourly')|(param=='ensstd'):
-        dtype, hdr, length = template_xhourly(out_collection_id)
-    # same template for daily ...
-    elif (param == 'daily'):
+    elif (param == 'xhourly')|(param == 'daily')|(param=='ensstd'):
         dtype, hdr, length = template_xhourly(out_collection_id)
 
     elif param == 'scaling':
@@ -296,6 +293,7 @@ def template_xhourly(out_collection_id):
     """"
     Template for reading xhourly catchment output files
     TODO Include the possibility to specify the Collection ID. Currently: 8 / tavg
+    MB: done
 
     """
     
