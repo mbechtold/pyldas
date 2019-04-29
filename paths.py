@@ -40,20 +40,22 @@ class paths(object):
             if platform.system() == 'Windows':
                 # default path for local copies on a windows machine
                 self.root = os.path.join('D:', 'data_sets', 'LDAS_runs')
-            elif platform.system() == 'Darwin':
-                # default path for local copies on a Mac
-                self.root = os.path.join('/', 'data_sets', 'LDAS_runs')
+            elif platform.node() == 'michel-Latitude-5580':
+                # default path for scratch mount
+                self.root = os.path.join('/', 'mnt', 'vsc_scratch','output')
             else:
                 # default path on the HPC
-                self.root = os.path.join('/', 'scratch', 'leuven', '320', 'vsc32046', 'output', 'TEST_RUNS')
+                self.root = os.path.join('/', 'scratch', 'leuven', '317', 'vsc31786', 'output')
+        else:
+            self.root = root
 
         # default experiment name
         if exp is None:
-            exp = 'US_M36_SMOS_noDA_unscaled'
+            exp = 'SMAP_EASEv2_M09_SI_SMOSfw_DA'
 
         # default domain name
         if domain is None:
-            domain = 'SMAP_EASEv2_M36_US'
+            domain = 'SMAP_EASEv2_M09'
 
         self.exp_root = os.path.join(self.root,exp,'output',domain)
 

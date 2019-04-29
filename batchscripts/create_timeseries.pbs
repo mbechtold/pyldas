@@ -1,34 +1,42 @@
 #!/bin/bash
-#PBS -l walltime=23:59:00
-#PBS -l nodes=1:ppn=24
+#PBS -l walltime=24:00:00
+#PBS -l nodes=1:ppn=36:skylake
 #PBS -A lp_ees_swm_ls_001
 #PBS -m abe
-#PBS -M alexander.gruber@kuleuven.be
+#PBS -M michel.bechtold@kuleuven.be
 #PBS -o ./log.txt
 #PBS -e ./out.txt
 
-exp=US_M36_SMOS40_DA_cal_scl_prog_std
-
+exp='SMAP_EASEv2_M36_NORTH_SCA_SMOSrw_DA'
+domain='SMAP_EASEv2_M36_NORTH'
 # --------------------------------------------------------
 # Generate netCDF image stacks with python
 # --------------------------------------------------------
 
+#### -l pmem=10gb
+#### -l partition=bigmem
+
+source activate dev
+
 cd $PBS_O_WORKDIR
-python create_netcdf_images.py
+python create_netcdf_images_M09_SI.py
+#python create_netcdf_images.py
 
 # --------------------------------------------------------
 # Generate netCDF timeseries stacks with nco
 # --------------------------------------------------------
 
-cd /scratch/leuven/320/vsc32046/output/TEST_RUNS
+cd /scratch/leuven/317/vsc31786/output
 
-cd $exp/output/SMAP_EASEv2_M36_US/ana/ens_avg
+cd $exp/output/$domain/ana/ens_avg
 
-ncks -4 -L 4 --cnk_dmn time,10000 --cnk_dmn species,1 --cnk_dmn lat,1 --cnk_dmn lon,1 ObsFcstAna_images.nc ObsFcstAna_timeseries.nc
+#ncks -4 -L 4 --cnk_dmn time,10000 --cnk_dmn species,1 --cnk_dmn lat,1 --cnk_dmn lon,1 ObsFcstAna_images.nc ObsFcstAna_timeseries.nc
+#3ncks -4 -L 4 --cnk_dmn time,18543 --cnk_dmn species,1 --cnk_dmn lat,1 --cnk_dmn lon,1 ObsFcstAna_images.nc ObsFcstAna_timeseries.nc
 
 cd ../../cat/ens_avg
 
-ncks -4 -L 4 --cnk_dmn time,20456 --cnk_dmn lat,1 --cnk_dmn lon,1 xhourly_images.nc xhourly_timeseries.nc
+#ncks -4 -L 4 --cnk_dmn time,20456 --cnk_dmn lat,1 --cnk_dmn lon,1 xhourly_images.nc xhourly_timeseries.nc
+#ncks -4 -L 4 --cnk_dmn time,25719 --cnk_dmn lat,1 --cnk_dmn lon,1 xhourly_images.nc xhourly_timeseries.nc
 
 cd $PBS_O_WORKDIR
-rm -f out.txt log.txt
+#rm -f out.txt log.txt

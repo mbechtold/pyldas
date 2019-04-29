@@ -6,6 +6,8 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
+import f90nml
+
 from netCDF4 import Dataset, date2num
 from collections import OrderedDict
 
@@ -62,11 +64,15 @@ class LDAS_io(object):
     def __init__(self,
                  param=None,
                  exp=None,
-                 domain=None):
+                 domain=None,
+                 root=None):
 
-        self.paths = paths(exp=exp, domain=domain)
-
-        self.obsparam = self.read_obsparam()
+        self.paths = paths(exp=exp, domain=domain, root=root)
+        self.driver = self.read_nml('driver')
+        try:
+            self.obsparam = self.read_obsparam()
+        except:
+            'No obsparam file. This is a model-only run.'
 
         tilecoord = self.read_params('tilecoord')
         tilegrids = self.read_params('tilegrids')
@@ -75,7 +81,7 @@ class LDAS_io(object):
         self.param = param
         if param is not None:
 
-            if param == 'xhourly':
+            if (param == 'xhourly') or (param == 'daily'):
                 path = self.paths.__getattribute__('cat')
             else:
                 path = self.paths.__getattribute__('exp_root')
@@ -83,11 +89,12 @@ class LDAS_io(object):
             self.files = find_files(path, param)
 
             ind = [i for i,f in enumerate(self.files) if f.find(param + '_images.nc') != -1]
+
             if len(ind) == 0:
                 logging.warning('NetCDF image cube not yet created. Use method "bin2netcdf".')
             else:
                 self.images = xr.open_dataset(self.files[ind[0]])
-                self.files = np.delete(self.files, ind[0])
+                self.files = np.delete(self.files,ind[0])
 
             ind = [i for i, f in enumerate(self.files) if f.find(param + '_timeseries.nc') != -1]
             if len(ind) == 0:
@@ -96,14 +103,20 @@ class LDAS_io(object):
                 self.timeseries = xr.open_dataset(self.files[ind[0]])
                 self.files = np.delete(self.files, ind[0])
 
-            self.files.sort()
-            self.dates = pd.to_datetime([f[-18:-5] for f in self.files], format='%Y%m%d_%H%M')
+            if (param == 'daily'):
+                self.dates = pd.to_datetime([f[-12:-4] for f in self.files], format='%Y%m%d').sort_values()
+            elif (param == 'xhourly'):
+                self.dates = pd.to_datetime([f[-18:-5] for f in self.files], format='%Y%m%d_%H%M').sort_values()
+
+            # TODO: Currently valid for 3-hourly data only! Times of the END of the 3hr periods are assigned!
+            # if self.param == 'xhourly':
+            # self.dates += pd.to_timedelta('2 hours')
+            # MB arg added: collection ID
+            self.dtype, self.hdr, self.length = get_template(self.param, self.driver['DRIVER_INPUTS']['out_collection_id'])
 
             # TODO: Currently valid for 3-hourly data only! Times of the END of the 3hr periods are assigned!
             # if self.param == 'xhourly':
                 # self.dates += pd.to_timedelta('2 hours')
-
-            self.dtype, self.hdr, self.length = get_template(self.param)
 
 
     def read_obsparam(self):
@@ -182,9 +195,9 @@ class LDAS_io(object):
                             'name': s(lines[bl + 20]),
                             'scalepath': s(lines[bl + 21]),
                             'scalename': s(lines[bl + 22]),
-                            'errstd': float(lines[bl + 23]),
-                            'errstd_file': b(lines[bl + 24]),
-                            'path_errstd': s(lines[bl + 25]),
+                            'flistpath': s(lines[bl + 23]),
+                            'flistname': s(lines[bl + 24]),
+                            'errstd': float(lines[bl + 25]),
                             'std_normal_max': float(lines[bl + 26]),
                             'zeromean': b(lines[bl + 27]),
                             'coarsen_pert': b(lines[bl + 28]),
@@ -331,6 +344,7 @@ class LDAS_io(object):
         if fname is None:
             fname = find_files(self.paths.rc_out, param)
 
+        logging.info('Reading %s ...' % (fname))
         reg_ftags = False if param == 'tilegrids' else True
 
         dtype, hdr, length = get_template(param)
@@ -345,6 +359,16 @@ class LDAS_io(object):
 
         return data
 
+    def read_nml(self, nml, fname=None):
+        """ Read nml files (driver, ensprop, ensupd) """
+
+        if fname is None:
+            fname = find_files(self.paths.rc_out, nml)
+
+        print(self.paths.rc_out)
+        data = f90nml.read(fname)
+        
+        return data
 
     def read_scaling_parameters(self, pentad=1, fname=None, tile_id=None):
         """
@@ -388,7 +412,7 @@ class LDAS_io(object):
 
         return data
 
-    def read_image(self, yr, mo, da, hr, mi, species=None):
+    def read_image(self, yr, mo, da, hr=None, mi=None, species=None):
         """"
         Read an image for a given date/time(/species/subregion)
         If a netCDF file has been created with self.bin2netcdf, the image will be read from this file,
@@ -413,7 +437,10 @@ class LDAS_io(object):
 
         # If netCDF file has been created/loaded, use xarray indexing functions
         if hasattr(self, 'images'):
-            datestr = '%04i-%02i-%02i %02i:%02i' % (yr, mo, da, hr, mi)
+            if hr is not None:
+                datestr = '%04i-%02i-%02i %02i:%02i' % (yr, mo, da, hr, mi)
+            else:
+                datestr = '%04i-%02i-%02i' % (yr, mo, da)
             if species is not None:
                 img = self.images.sel(species=species, time=datestr).values
             else:
@@ -421,7 +448,10 @@ class LDAS_io(object):
 
         # Otherwise, read from fortran binary
         else:
-            datestr = '%04i%02i%02i_%02i%02i' % (yr, mo, da, hr, mi)
+            if hr is not None:
+                datestr = '%04i%02i%02i_%02i%02i' % (yr, mo, da, hr, mi)
+            else:
+                datestr = '%04i%02i%02i' % (yr, mo, da)
             fname = [f for f in self.files if f.find(datestr) != -1]
 
             if len(fname) == 0:
@@ -581,29 +611,35 @@ class LDAS_io(object):
                 os.remove(out_file)
 
         # get variable names from fortran reader template
-        variables = get_template(self.param)[0].names
-
+        variables = get_template(self.param, self.driver['DRIVER_INPUTS']['out_collection_id'])[0].names
         # If specified, only generate netCDF file for specific date range
+        
         dates = self.dates
         if date_from is not None:
             dates = dates[dates >= pd.to_datetime(date_from)]
         if date_to is not None:
             dates = dates[dates <= pd.to_datetime(date_to)]
 
-        filelons = np.sort(self.grid.tilecoord.groupby('i_indg').first()['com_lon'])
-        filelats = np.sort(self.grid.tilecoord.groupby('j_indg').first()['com_lat'])[::-1]
+        domainlons = self.grid.ease_lons[np.min(self.grid.tilecoord.i_indg):(np.max(self.grid.tilecoord.i_indg)+1)]
+        domainlats = self.grid.ease_lats[np.min(self.grid.tilecoord.j_indg):(np.max(self.grid.tilecoord.j_indg)+1)]
+
+        lonmin = domainlons[np.argmin(np.abs(domainlons-lonmin))]
+        lonmax = domainlons[np.argmin(np.abs(domainlons-lonmax))]
+        latmin = domainlats[np.argmin(np.abs(domainlats-latmin))]
+        latmax = domainlats[np.argmin(np.abs(domainlats-latmax))]
+
+        # Use grid lon lat to avoid rounding issues
+        tmp_tilecoord = self.grid.tilecoord.copy()
+        tmp_tilecoord['com_lon'] = self.grid.ease_lons[self.grid.tilecoord.i_indg]
+        tmp_tilecoord['com_lat'] = self.grid.ease_lats[self.grid.tilecoord.j_indg]
 
         # Clip region based on specified coordinate boundaries
-        ind_img = self.grid.tilecoord[(self.grid.tilecoord['com_lon']>=lonmin)&(self.grid.tilecoord['com_lon']<=lonmax)&
-                                 (self.grid.tilecoord['com_lat']<=latmax)&(self.grid.tilecoord['com_lat']>=latmin)].index
-        lonmin = self.grid.tilecoord.loc[ind_img, 'com_lon'].values.min()
-        lonmax = self.grid.tilecoord.loc[ind_img, 'com_lon'].values.max()
-        latmin = self.grid.tilecoord.loc[ind_img, 'com_lat'].values.min()
-        latmax = self.grid.tilecoord.loc[ind_img, 'com_lat'].values.max()
-        lons = filelons[(filelons >= lonmin) & (filelons <= lonmax)]
-        lats = filelats[(filelats >= latmin) & (filelats <= latmax)]
-        i_offg_2 = np.where(filelons >= lonmin)[0][0]
-        j_offg_2 = np.where(filelats <= latmax)[0][0]
+        ind_img = self.grid.tilecoord[(tmp_tilecoord['com_lon']>=lonmin)&(tmp_tilecoord['com_lon']<=lonmax)&
+                                 (tmp_tilecoord['com_lat']<=latmax)&(tmp_tilecoord['com_lat']>=latmin)].index
+        lons = domainlons[(domainlons >= lonmin) & (domainlons <= lonmax)]
+        lats = domainlats[(domainlats >= latmin) & (domainlats <= latmax)]
+        i_offg_2 = np.where(domainlons >= lonmin)[0][0]
+        j_offg_2 = np.where(domainlats <= latmax)[0][0]
 
         # Innovation file data has an additional 'species' dimension
         if self.param == 'ObsFcstAna':
@@ -624,16 +660,22 @@ class LDAS_io(object):
                 return
 
             spc = pd.DataFrame(self.obsparam)['species'].values.astype('uint8')
-            dimensions = OrderedDict([('species',spc), ('lat',lats), ('lon',lons), ('time',dates)])
+            dimensions = OrderedDict([('time',dates), ('species',spc), ('lat',lats), ('lon',lons)])
         else:
-            dimensions = OrderedDict([('lat',lats), ('lon',lons), ('time',dates)])
+            dimensions = OrderedDict([('time',dates), ('lat',lats), ('lon',lons)])
 
         dataset = self.ncfile_init(out_file, dimensions, variables)
 
         for i,dt in enumerate(dates):
             logging.info('%d / %d' % (i, len(dates)))
 
-            data = self.read_image(dt.year, dt.month, dt.day, dt.hour, dt.minute)
+
+
+            if self.param == 'daily':
+                data = self.read_image(dt.year,dt.month,dt.day)
+            else:
+                data = self.read_image(dt.year,dt.month,dt.day,dt.hour,dt.minute)
+
             data = data.loc[data.index.intersection(ind_img), :]
 
             if len(data) == 0:
@@ -657,10 +699,10 @@ class LDAS_io(object):
 
                 if self.param == 'ObsFcstAna':
                     img[ind_spc,ind_lat,ind_lon] = tmp_img
-                    dataset.variables[var][:,:,:,i] = img
+                    dataset.variables[var][i,:,:,:] = img
                 else:
                     img[ind_lat,ind_lon] = tmp_img
-                    dataset.variables[var][:,:,i] = img
+                    dataset.variables[var][i,:,:] = img
 
         # Save file to disk and loat it as xarray Dataset into the class variable space
         dataset.close()
@@ -669,25 +711,26 @@ class LDAS_io(object):
 
 if __name__=='__main__':
 
-    date_from = '2016-06-01'
-    date_to = '2016-07-01'
+    date_from = '2010-01-01'
+    date_to = '2018-12-31'
     # date_from = None
     # date_to = None
 
-    latmin=35.
-    latmax=45.
-    lonmin=-90.
-    lonmax=-50.
-    # latmin=0
-    # latmax=90
-    # lonmin=-180.
-    # lonmax=0.
+    #latmin=35.
+    #latmax=45.
+    #lonmin=-90.
+    #lonmax=-50.
+    latmin=0
+    latmax=90
+    lonmin=-180.
+    lonmax=180.
 
-    param = 'xhourly'
-    exp = 'US_M36_SMOS40_DA_cal_scaled'
+    param = 'ObsFcstAna'
+    exp = 'SMAP_EASEv2_M09_SI_SMOSfw_DA_TEST'
+    domain = 'SMAP_EASEv2_M09'
+    root='/staging/leuven/stg_00024/OUTPUT/michelb'
+    io = LDAS_io(param, exp, domain, root)
 
-    io = LDAS_io(param, exp)
-
-    io.bin2netcdf(overwrite=True, date_from=date_from, date_to=date_to, latmin=latmin, latmax=latmax, lonmin=lonmin, lonmax=lonmax)
+    io.bin2netcdf(overwrite=False, date_from=date_from, date_to=date_to, latmin=latmin, latmax=latmax, lonmin=lonmin, lonmax=lonmax)
 
     # io.read_ts('obs_obs', -113.480529785, 40.691051628, species=1).plot()

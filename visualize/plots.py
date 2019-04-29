@@ -4,6 +4,11 @@ import os
 import pandas as pd
 import numpy as np
 
+import platform
+if platform.system() == 'Linux':
+    import matplotlib
+    matplotlib.use('TkAgg')
+
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
 
@@ -12,37 +17,38 @@ from pyldas.grids import EASE2
 from pyldas.interface import LDAS_io
 
 
-def plot_catparams():
+def plot_catparams(exp, domain, root, outpath):
 
-    outpath = r'D:\work\LDAS\2018-01_catparams'
+    io = LDAS_io('catparam', exp=exp, domain=domain, root=root)
 
-    exp = 'US_M36_SMOS40_DA_cal_scaled'
+    tc = io.grid.tilecoord
+    tg = io.grid.tilegrids
 
-    tc = LDAS_io().grid.tilecoord
-    tg = LDAS_io().grid.tilegrids
+    lons = io.grid.ease_lons[tc['i_indg'].min():(tc['i_indg'].max()+1)]
+    lats = io.grid.ease_lats[tc['j_indg'].min():(tc['j_indg'].max()+1)]
 
     tc.i_indg -= tg.loc['domain','i_offg'] # col / lon
     tc.j_indg -= tg.loc['domain','j_offg'] # row / lat
 
-    lons = np.unique(tc.com_lon.values)
-    lats = np.unique(tc.com_lat.values)[::-1]
-
     lons, lats = np.meshgrid(lons, lats)
 
-    llcrnrlat = 24
-    urcrnrlat = 51
-    llcrnrlon = -128
-    urcrnrlon = -64
+    llcrnrlat = np.min(lats)
+    urcrnrlat = np.max(lats)
+    llcrnrlon = np.min(lons)
+    urcrnrlon = np.max(lons)
     figsize = (20, 10)
     # cbrange = (-20, 20)
     cmap = 'jet'
     fontsize = 20
 
-    params = LDAS_io(exp=exp).read_params('catparam')
+    params = LDAS_io(exp=exp, domain=domain).read_params('catparam')
 
     for param in params:
 
-        fname = os.path.join(outpath, param + '.png')
+        if not os.path.exists(os.path.join(outpath, exp)):
+            os.mkdir(os.path.join(outpath, exp))
+
+        fname = os.path.join(outpath, exp, param + '.png')
 
         img = np.full(lons.shape, np.nan)
         img[tc.j_indg.values, tc.i_indg.values] = params[param].values
@@ -85,11 +91,14 @@ def plot_rtm_parameters():
     tc = LDAS_io().grid.tilecoord
     tg = LDAS_io().grid.tilegrids
 
+    exp = 'SMAP_EASEv2_M36_NORTH_SCA_SMOSrw_DA'
+    domain='SMAP_EASEv2_M36_NORTH'
+
     tc.i_indg -= tg.loc['domain','i_offg'] # col / lon
     tc.j_indg -= tg.loc['domain','j_offg'] # row / lat
 
-    lons = np.unique(tc.com_lon.values)
-    lats = np.unique(tc.com_lat.values)[::-1]
+    lons = LDAS_io().grid.ease_lons[np.min(LDAS_io().grid.tilecoord.i_indg):(np.max(LDAS_io().grid.tilecoord.i_indg)+1)]
+    lats = LDAS_io().grid.ease_lats[np.min(LDAS_io().grid.tilecoord.j_indg):(np.max(LDAS_io().grid.tilecoord.j_indg)+1)]
 
     lons, lats = np.meshgrid(lons, lats)
 
@@ -155,11 +164,14 @@ def plot_rtm_parameter_differences():
     tc = LDAS_io().grid.tilecoord
     tg = LDAS_io().grid.tilegrids
 
+    exp = 'SMAP_EASEv2_M36_NORTH_SCA_SMOSrw_DA'
+    domain='SMAP_EASEv2_M36_NORTH'
+
     tc.i_indg -= tg.loc['domain','i_offg'] # col / lon
     tc.j_indg -= tg.loc['domain','j_offg'] # row / lat
 
-    lons = np.unique(tc.com_lon.values)
-    lats = np.unique(tc.com_lat.values)[::-1]
+    lons = LDAS_io().grid.ease_lons[np.min(LDAS_io().grid.tilecoord.i_indg):(np.max(LDAS_io().grid.tilecoord.i_indg)+1)]
+    lats = LDAS_io().grid.ease_lats[np.min(LDAS_io().grid.tilecoord.j_indg):(np.max(LDAS_io().grid.tilecoord.j_indg)+1)]
 
     lons, lats = np.meshgrid(lons, lats)
 
@@ -277,7 +289,10 @@ def plot_ease_img(data,tag,
 
 def plot_grid_coord_indices():
 
-    io = LDAS_io('ObsFcstAna', exp='US_M36_SMOS40_noDA_cal_scaled')
+    exp = 'SMAP_EASEv2_M36_NORTH_SCA_SMOSrw_DA'
+    domain='SMAP_EASEv2_M36_NORTH'
+    
+    io = LDAS_io('ObsFcstAna', exp=exp, domain=domain)
 
     lats = io.images.lat.values
     lons = io.images.lon.values
@@ -342,8 +357,11 @@ def plot_model_image():
 
 def plot_innov(spc=8, row=35, col=65):
 
-    ts_scl = LDAS_io('ObsFcstAna',exp='US_M36_SMOS_noDA_scaled').timeseries
-    ts_usc = LDAS_io('ObsFcstAna',exp='US_M36_SMOS_noDA_unscaled').timeseries
+    exp = 'SMAP_EASEv2_M36_NORTH_SCA_SMOSrw_DA'
+    domain='SMAP_EASEv2_M36_NORTH'
+    
+    ts_scl = LDAS_io('ObsFcstAna', exp=exp, domain=domain).timeseries
+    ts_usc = LDAS_io('ObsFcstAna', exp=exp, domain=domain).timeseries
 
     plt.figure(figsize=(18,11))
 
@@ -479,8 +497,11 @@ def plot_fcst_uncertainties():
 
 
 if __name__=='__main__':
-    plot_catparams()
 
+    outpath = '/staging/leuven/stg_00024/OUTPUT/michelb/'
+    exp = 'SMAP_EASEv2_M09_SI_SMOSfw_DA'
+    domain = 'SMAP_EASEv2_M09'
+    plot_catparams(exp, domain, outpath)
 
 # llcrnrlat = -58.,
 # urcrnrlat = 78.,
