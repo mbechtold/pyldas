@@ -105,7 +105,7 @@ class LDAS_io(object):
 
             if (param == 'daily'):
                 self.dates = pd.to_datetime([f[-12:-4] for f in self.files], format='%Y%m%d').sort_values()
-            elif (param == 'xhourly'):
+            elif ((param == 'xhourly') | (param == 'incr') | (param == 'ObsFcstAna')):
                 self.dates = pd.to_datetime([f[-18:-5] for f in self.files], format='%Y%m%d_%H%M').sort_values()
 
             # TODO: Currently valid for 3-hourly data only! Times of the END of the 3hr periods are assigned!
@@ -550,8 +550,9 @@ class LDAS_io(object):
             ds.variables[dim][:] = dimensions[dim]
 
         # Coordinate attributes following CF-conventions
-        ds.variables['time'].setncatts({'long_name': 'time',
-                                        'units': timeunit})
+        if "time" in ds.variables:
+            ds.variables['time'].setncatts({'long_name': 'time',
+                                            'units': timeunit})
         ds.variables['lon'].setncatts({'long_name': 'longitude',
                                        'units':'degrees_east'})
         ds.variables['lat'].setncatts({'long_name': 'latitude',

@@ -61,11 +61,20 @@ def plot_catparams(exp, domain, root, outpath):
                     urcrnrlat=urcrnrlat,
                     llcrnrlon=llcrnrlon,
                     urcrnrlon=urcrnrlon,
-                    resolution='c')
+                    resolution='l')
 
         m.drawcoastlines()
         m.drawcountries()
         m.drawstates()
+
+        # draw parallels and meridians.
+        # label parallels on right and top
+        # meridians on bottom and left
+        parallels = np.arange(0.,81,10.)
+        # labels = [left,right,top,bottom]
+        m.drawparallels(parallels,labels=[False,True,True,False])
+        meridians = np.arange(10.,351.,20.)
+        m.drawmeridians(meridians,labels=[True,False,False,True])
 
         im = m.pcolormesh(lons, lats, img_masked, cmap=cmap, latlon=True)
 
@@ -82,30 +91,29 @@ def plot_catparams(exp, domain, root, outpath):
         plt.close()
 
 
-def plot_rtm_parameters():
-
-    root = r'C:\Users\u0116961\Documents\work\LDASsa\2018-02_scaling\RTM_parameters'
+def plot_rtm_parameters(exp, domain, root, outpath):
 
     experiments = ['US_M36_SMOS_DA_calibrated_scaled', 'US_M36_SMOS_DA_nocal_scaled_harmonic']
+    experiments = [exp]
 
-    tc = LDAS_io().grid.tilecoord
-    tg = LDAS_io().grid.tilegrids
+    io = LDAS_io('catparam', exp=exp, domain=domain, root=root)
 
-    exp = 'SMAP_EASEv2_M36_NORTH_SCA_SMOSrw_DA'
-    domain='SMAP_EASEv2_M36_NORTH'
+    tc = io.grid.tilecoord
+    tg = io.grid.tilegrids
+
+    lons = io.grid.ease_lons[tc['i_indg'].min():(tc['i_indg'].max()+1)]
+    lats = io.grid.ease_lats[tc['j_indg'].min():(tc['j_indg'].max()+1)]
 
     tc.i_indg -= tg.loc['domain','i_offg'] # col / lon
     tc.j_indg -= tg.loc['domain','j_offg'] # row / lat
 
-    lons = LDAS_io().grid.ease_lons[np.min(LDAS_io().grid.tilecoord.i_indg):(np.max(LDAS_io().grid.tilecoord.i_indg)+1)]
-    lats = LDAS_io().grid.ease_lats[np.min(LDAS_io().grid.tilecoord.j_indg):(np.max(LDAS_io().grid.tilecoord.j_indg)+1)]
-
     lons, lats = np.meshgrid(lons, lats)
 
-    llcrnrlat = 24
-    urcrnrlat = 51
-    llcrnrlon = -128
-    urcrnrlon = -64
+    llcrnrlat = np.min(lats)
+    urcrnrlat = np.max(lats)
+    llcrnrlon = np.min(lons)
+    urcrnrlon = np.max(lons)
+
     figsize = (20, 10)
     # cbrange = (-20, 20)
     cmap = 'jet'
@@ -113,15 +121,15 @@ def plot_rtm_parameters():
 
     for exp in experiments:
 
-        outpath = os.path.join(root,exp)
-        if not os.path.exists(outpath):
-            os.makedirs(outpath)
+        if not os.path.exists(os.path.join(outpath, exp)):
+            os.mkdir(os.path.join(outpath, exp))
+
+        fname = os.path.join(outpath, exp, param + '.png')
 
         params = LDAS_io(exp=exp).read_params('RTMparam')
 
         for param in params:
 
-            fname = os.path.join(outpath, param + '.png')
 
             img = np.full(lons.shape, np.nan)
             img[tc.j_indg.values, tc.i_indg.values] = params[param].values
@@ -134,7 +142,7 @@ def plot_rtm_parameters():
                         urcrnrlat=urcrnrlat,
                         llcrnrlon=llcrnrlon,
                         urcrnrlon=urcrnrlon,
-                        resolution='c')
+                        resolution='l')
 
             m.drawcoastlines()
             m.drawcountries()
@@ -209,7 +217,7 @@ def plot_rtm_parameter_differences():
                     urcrnrlat=urcrnrlat,
                     llcrnrlon=llcrnrlon,
                     urcrnrlon=urcrnrlon,
-                    resolution='c')
+                    resolution='l')
 
         m.drawcoastlines()
         m.drawcountries()
@@ -265,7 +273,7 @@ def plot_ease_img(data,tag,
                 urcrnrlat=urcrnrlat,
                 llcrnrlon=llcrnrlon,
                 urcrnrlon=urcrnrlon,
-                resolution='c')
+                resolution='l')
 
     m.drawcoastlines()
     m.drawcountries()
@@ -305,7 +313,7 @@ def plot_grid_coord_indices():
     urcrnrlon = -64
     m = Basemap(projection='mill', llcrnrlat=llcrnrlat, urcrnrlat=urcrnrlat, llcrnrlon=llcrnrlon,
                 urcrnrlon=urcrnrlon,
-                resolution='c')
+                resolution='l')
     m.drawcoastlines(linewidth=0.5)
     m.drawcountries(linewidth=0.5)
     m.drawstates(linewidth=0.1)
@@ -410,7 +418,7 @@ def plot_xarr_img(img,lons,lats,
                 urcrnrlat=urcrnrlat,
                 llcrnrlon=llcrnrlon,
                 urcrnrlon=urcrnrlon,
-                resolution='c')
+                resolution='l')
     m.drawcoastlines()
     m.drawcountries()
     m.drawstates()
