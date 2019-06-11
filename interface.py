@@ -88,22 +88,23 @@ class LDAS_io(object):
 
             self.files = find_files(path, param)
 
-            ind = [i for i,f in enumerate(self.files) if f.find(param + '_images.nc') != -1]
+            if (self.files is None)==False:
+                ind = [i for i,f in enumerate(self.files) if f.find(param + '_images.nc') != -1]
+                if len(ind) == 0:
+                    logging.warning('NetCDF image cube not yet created. Use method "bin2netcdf".')
+                else:
+                    self.images = xr.open_dataset(self.files[ind[0]])
+                    self.files = np.delete(self.files,ind[0])
 
-            if len(ind) == 0:
-                logging.warning('NetCDF image cube not yet created. Use method "bin2netcdf".')
-            else:
-                self.images = xr.open_dataset(self.files[ind[0]])
-                self.files = np.delete(self.files,ind[0])
+            if (self.files is None)==False:
+                ind = [i for i, f in enumerate(self.files) if f.find(param + '_timeseries.nc') != -1]
+                if len(ind) == 0:
+                    logging.warning('NetCDF time series cube not yet created. Use the NetCDF kitchen sink.')
+                else:
+                    self.timeseries = xr.open_dataset(self.files[ind[0]])
+                    self.files = np.delete(self.files, ind[0])
 
-            ind = [i for i, f in enumerate(self.files) if f.find(param + '_timeseries.nc') != -1]
-            if len(ind) == 0:
-                logging.warning('NetCDF time series cube not yet created. Use the NetCDF kitchen sink.')
-            else:
-                self.timeseries = xr.open_dataset(self.files[ind[0]])
-                self.files = np.delete(self.files, ind[0])
-
-            if (param == 'daily'):
+            if ((param == 'daily') | (param == 'ensstd')):
                 self.dates = pd.to_datetime([f[-12:-4] for f in self.files], format='%Y%m%d').sort_values()
             elif ((param == 'xhourly') | (param == 'incr') | (param == 'ObsFcstAna')):
                 self.dates = pd.to_datetime([f[-18:-5] for f in self.files], format='%Y%m%d_%H%M').sort_values()
@@ -481,9 +482,9 @@ class LDAS_io(object):
             col, row = self.grid.lonlat2colrow(col, row, domain=True)
 
         if species is None:
-            ts = self.timeseries[param][row,col,:].to_series()
+            ts = self.timeseries[param][:,row,col].to_series()
         else:
-            ts = self.timeseries[param].sel(species=species)[row,col,:].to_series()
+            ts = self.timeseries[param].sel(species=species)[:,row,col].to_series()
 
         return ts
 
@@ -518,7 +519,7 @@ class LDAS_io(object):
 
         Returns
         -------
-        ds : fileid
+        ds : filencfile_initid
             File ID of the created netCDF file
 
         """
@@ -672,7 +673,7 @@ class LDAS_io(object):
 
 
 
-            if self.param == 'daily':
+            if ((self.param == 'daily') | (self.param == 'ensstd')):
                 data = self.read_image(dt.year,dt.month,dt.day)
             else:
                 data = self.read_image(dt.year,dt.month,dt.day,dt.hour,dt.minute)
