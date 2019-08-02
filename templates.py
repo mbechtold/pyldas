@@ -38,7 +38,7 @@ def get_template(param, out_collection_id=None):
         dtype, hdr, length = template_xhourly(out_collection_id)
 
     elif param == 'scaling':
-        dtype, hdr, length = template_scaling()
+        dtype, hdr, length = template_scaling(sensor='SMAP')
 
     elif param == 'error':
         dtype, hdr, length = template_error_Tb40()
@@ -202,13 +202,15 @@ def template_scaling(sensor='SMOS'):
 
     # 23 header fields + 7 incidence angles
     # TODO: allow for a different number of inc. angles when using for SMAP (# angles on hdr pos 20)
-    hdr = 32
-    length = 19
 
     if sensor == 'SMOS':
         angles = [30,35,40,45,50,55,60]
-    else:
+        hdr = 32
+        length = 19
+    else: # SMOS fitted or SMAP
         angles = [40,]
+        hdr = 26
+        length = 19
 
     dtype = np.dtype([('lon', '>f4'),('lat', '>f4'),('tile_id', '>i4')]+
                      [('m_obs_H_%i'%ang, '>f4') for ang in angles] +
