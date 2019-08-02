@@ -88,12 +88,19 @@ class LDAS_io(object):
 
             self.files = find_files(path, param)
 
+            binfiles = [i for i in self.files if ".nc" not in i]
+            if ((param == 'daily') | (param == 'ensstd')):
+                self.dates = pd.to_datetime([f[-12:-4] for f in binfiles], format='%Y%m%d').sort_values()
+            elif ((param == 'xhourly') | (param == 'incr') | (param == 'ObsFcstAna')):
+                self.dates = pd.to_datetime([f[-18:-5] for f in binfiles], format='%Y%m%d_%H%M').sort_values()
+
             if (self.files is None)==False:
                 ind = [i for i,f in enumerate(self.files) if f.find(param + '_images.nc') != -1]
                 if len(ind) == 0:
                     logging.warning('NetCDF image cube not yet created. Use method "bin2netcdf".')
                 else:
                     self.images = xr.open_dataset(self.files[ind[0]])
+                    self.dates = self.images['time'].values
                     self.files = np.delete(self.files,ind[0])
 
             if (self.files is None)==False:
@@ -103,11 +110,6 @@ class LDAS_io(object):
                 else:
                     self.timeseries = xr.open_dataset(self.files[ind[0]])
                     self.files = np.delete(self.files, ind[0])
-
-            if ((param == 'daily') | (param == 'ensstd')):
-                self.dates = pd.to_datetime([f[-12:-4] for f in self.files], format='%Y%m%d').sort_values()
-            elif ((param == 'xhourly') | (param == 'incr') | (param == 'ObsFcstAna')):
-                self.dates = pd.to_datetime([f[-18:-5] for f in self.files], format='%Y%m%d_%H%M').sort_values()
 
             # TODO: Currently valid for 3-hourly data only! Times of the END of the 3hr periods are assigned!
             # if self.param == 'xhourly':
@@ -339,7 +341,11 @@ class LDAS_io(object):
 
         return data
 
-    def read_params(self, param, fname=None):
+    def read_params(self, param, fname=None,
+                   latmin=-90.,
+                   latmax=90.,
+                   lonmin=-180.,
+                   lonmax=180.):
         """ Read parameter files (tilegrids, tilecoord, RTMparam, catparam"""
 
         if fname is None:
@@ -357,6 +363,9 @@ class LDAS_io(object):
         else:
             # index equals the 'tilenum' which starts at 1!!
             data.index += 1
+
+        #if (param=='catparam'):
+        #    data = data[(self.grid.tilecoord.com_lat>=latmin)&(self.grid.tilecoord.com_lat<=latmax)&(self.grid.tilecoord.com_lon>=lonmin)&(self.grid.tilecoord.com_lon<=lonmax)]
 
         return data
 
@@ -617,6 +626,7 @@ class LDAS_io(object):
         # If specified, only generate netCDF file for specific date range
         
         dates = self.dates
+        print(dates[0])
         if date_from is not None:
             dates = dates[dates >= pd.to_datetime(date_from)]
         if date_to is not None:
