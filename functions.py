@@ -24,7 +24,7 @@ def find_files(path,searchstr):
                 res.append(os.path.join(root, f))
 
     # multiple files in rc_out possible for
-    multilist = ['catbias','driver','mwRTMparam','catparam','ensprop','obslog','domdecomp','ensupd','obsparam']
+    multilist = ['catbias','driver','mwRTMparam','RTMparam','catparam','ensprop','obslog','domdecomp','ensupd','obsparam']
     if len(res) == 0:
         logging.warning('No files found which contain: "' + searchstr + '".')
         return None
