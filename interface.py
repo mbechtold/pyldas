@@ -99,17 +99,23 @@ class LDAS_io(object):
                 if len(ind) == 0:
                     logging.warning('NetCDF image cube not yet created. Use method "bin2netcdf".')
                 else:
-                    self.images = xr.open_dataset(self.files[ind[0]])
-                    self.dates = self.images['time'].values
-                    self.files = np.delete(self.files,ind[0])
+                    try:
+                        self.images = xr.open_dataset(self.files[ind[0]])
+                        self.dates = self.images['time'].values
+                        self.files = np.delete(self.files,ind[0])
+                    except:
+                        logging.warning('NetCDF image cube seems to be corrupted. Could not be loaded. Use method "bin2netcdf')
 
             if (self.files is None)==False:
                 ind = [i for i, f in enumerate(self.files) if f.find(param + '_timeseries.nc') != -1]
                 if len(ind) == 0:
                     logging.warning('NetCDF time series cube not yet created. Use the NetCDF kitchen sink.')
                 else:
-                    self.timeseries = xr.open_dataset(self.files[ind[0]])
-                    self.files = np.delete(self.files, ind[0])
+                    try:
+                        self.timeseries = xr.open_dataset(self.files[ind[0]])
+                        self.files = np.delete(self.files, ind[0])
+                    except:
+                        logging.warning('NetCDF time series cube seems to be corrupted. Could not be loaded. Use method "bin2netcdf')
 
             # TODO: Currently valid for 3-hourly data only! Times of the END of the 3hr periods are assigned!
             # if self.param == 'xhourly':
