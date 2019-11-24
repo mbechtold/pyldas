@@ -101,8 +101,8 @@ class LDAS_io(object):
                 else:
                     try:
                         self.images = xr.open_dataset(self.files[ind[0]])
-                        self.dates = self.images['time'].values
                         self.files = np.delete(self.files,ind[0])
+                        self.dates = pd.to_datetime(self.images['time'].values)
                     except:
                         logging.warning('NetCDF image cube seems to be corrupted. Could not be loaded. Use method "bin2netcdf')
 
@@ -548,7 +548,10 @@ class LDAS_io(object):
 
             # convert pandas Datetime Index to netCDF-understandable numeric format
             if dim == 'time':
-                dimensions[dim] = date2num(dimensions[dim].to_pydatetime(), timeunit).astype('int32')
+                try:
+                    dimensions[dim] = date2num(dimensions[dim].to_pydatetime(), timeunit).astype('int32')
+                except:
+                    dimensions[dim] = date2num(pd.to_datetime(dimensions[dim]).to_pydatetime(),timeunit).astype('int32')
 
             # Files are per default image chunked
             if dim in ['lon','lat']:
@@ -614,9 +617,16 @@ class LDAS_io(object):
             Upper longitude limit for which a netCDF image cube should be generated
 
         """
-
-        out_path = walk_up_folder(self.files[0],3)
+        if self.files[0].endswith(".nc") or self.files[0].endswith(".tmp"):
+            out_path = walk_up_folder(self.files[0],1)
+        else:
+            out_path = walk_up_folder(self.files[0],3)
         out_file = os.path.join(out_path,self.param + '_images.nc')
+        out_file2 = os.path.join(out_path,'*.tmp')
+        try:
+            os.remove(out_file2)
+        except:
+            pass
 
         # remove file if it already exists
         if hasattr(self,'images'):
@@ -634,9 +644,15 @@ class LDAS_io(object):
         dates = self.dates
         print(dates[0])
         if date_from is not None:
-            dates = dates[dates >= pd.to_datetime(date_from)]
+            try:
+                dates = dates[dates >= pd.to_datetime(date_from)]
+            except:
+                dates = dates[pd.to_datetime(dates) >= pd.to_datetime(date_from)]
         if date_to is not None:
-            dates = dates[dates <= pd.to_datetime(date_to)]
+            try:
+                dates = dates[dates <= pd.to_datetime(date_to)]
+            except:
+                dates = dates[pd.to_datetime(dates) <= pd.to_datetime(date_to)]
 
         domainlons = self.grid.ease_lons[np.min(self.grid.tilecoord.i_indg):(np.max(self.grid.tilecoord.i_indg)+1)]
         domainlats = self.grid.ease_lats[np.min(self.grid.tilecoord.j_indg):(np.max(self.grid.tilecoord.j_indg)+1)]
