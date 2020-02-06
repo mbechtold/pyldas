@@ -81,7 +81,7 @@ class LDAS_io(object):
         self.param = param
         if param is not None:
 
-            if (param == 'xhourly') or (param == 'daily'):
+            if (param == 'inst') or (param == 'xhourly') or (param == 'daily'):
                 path = self.paths.__getattribute__('cat')
             else:
                 path = self.paths.__getattribute__('exp_root')
@@ -91,7 +91,7 @@ class LDAS_io(object):
             binfiles = [i for i in self.files if ".nc" not in i]
             if ((param == 'daily') | (param == 'ensstd')):
                 self.dates = pd.to_datetime([f[-12:-4] for f in binfiles], format='%Y%m%d').sort_values()
-            elif ((param == 'xhourly') | (param == 'incr') | (param == 'ObsFcstAna')):
+            elif ((param == 'inst') | (param == 'xhourly') | (param == 'incr') | (param == 'ObsFcstAna')):
                 self.dates = pd.to_datetime([f[-18:-5] for f in binfiles], format='%Y%m%d_%H%M').sort_values()
 
             if (self.files is None)==False:
