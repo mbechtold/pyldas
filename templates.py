@@ -34,8 +34,8 @@ def get_template(param, out_collection_id=None):
     elif param == 'ObsFcstAna':
         dtype, hdr, length = template_ObsFcstAna()
 
-    elif (param == 'xhourly')|(param == 'daily')|(param=='ensstd'):
-        dtype, hdr, length = template_xhourly(out_collection_id)
+    elif (param == 'inst')|(param == 'xhourly')|(param == 'daily')|(param=='ensstd'):
+        dtype, hdr, length = template_xhourly(out_collection_id, param)
 
     elif param == 'scaling':
         dtype, hdr, length = template_scaling(sensor='SMAP')
@@ -291,7 +291,7 @@ def template_ObsFcstAna():
 
     return dtype, hdr, length
 
-def template_xhourly(out_collection_id):
+def template_xhourly(out_collection_id,param):
     """"
     Template for reading xhourly catchment output files
     TODO Include the possibility to specify the Collection ID. Currently: 8 / tavg
@@ -363,17 +363,16 @@ def template_xhourly(out_collection_id):
         hdr = None
         length = None
         dtype = np.dtype([('SWE', '>f4'),
-                          ('precipitation_total_surface_flux', '>f4')])      
-        ''' inst
-        dtype = np.dtype([('sfmc', '>f4'),
-                          ('rzmc', '>f4'),
-                          ('tsurf', '>f4'),
-                          ('tp1', '>f4'),
-                          ('Tair', '>f4'),
-                          ('lai', '>f4'),
-                          ('catdef', '>f4'),
-                          ('ar1', '>f4')])      
-        '''
+                          ('precipitation_total_surface_flux', '>f4')])
+        if param == 'inst':
+            dtype = np.dtype([('sfmc', '>f4'),
+                              ('rzmc', '>f4'),
+                              ('tsurf', '>f4'),
+                              ('tp1', '>f4'),
+                              ('Tair', '>f4'),
+                              ('lai', '>f4'),
+                              ('catdef', '>f4'),
+                              ('ar1', '>f4')])
     
     # out_collection_id 13: 14 variables
     elif out_collection_id == 13:
