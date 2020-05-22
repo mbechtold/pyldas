@@ -356,7 +356,21 @@ def template_xhourly(out_collection_id,param):
                           ('prmc', '>f4'),
                           ('tp1', '>f4'),
                           ('snow_mass', '>f4'),
-                          ('precipitation_total_surface_flux', '>f4')])    
+                          ('precipitation_total_surface_flux', '>f4')])
+
+    # out_collection_id 9: 2 variables tavg
+    elif out_collection_id == 9:
+        hdr = None
+        length = None
+        dtype = np.dtype([('SWE', '>f4'),
+                          ('precipitation_total_surface_flux', '>f4')])
+        if param == 'inst':
+            dtype = np.dtype([('sfmc', '>f4'),
+                              ('rzmc', '>f4'),
+                              ('tsurf', '>f4'),
+                              ('tp1', '>f4'),
+                              ('Tair', '>f4'),
+                              ('lai', '>f4')])
 
     # out_collection_id 12: 2 variables tavg
     elif out_collection_id == 12:
@@ -391,8 +405,39 @@ def template_xhourly(out_collection_id,param):
                           ('shflux', '>f4'),
                           ('lhflux', '>f4'),
                           ('evap', '>f4'),
-                          ('runoff', '>f4')])  
-    
+                          ('runoff', '>f4')])
+
+    elif out_collection_id == 14:
+        hdr = None
+        length = None
+        dtype = np.dtype([('srfexc', '>f4'),
+                          ('rzexc', '>f4'),
+                          ('catdef', '>f4'),
+                          ('ar1', '>f4'),
+                          ('ar2', '>f4'),
+                          ('sfmc', '>f4'),
+                          ('rzmc', '>f4'),
+                          ('tsurf', '>f4'),
+                          ('tp1', '>f4'),
+                          ('tpN', '>f4'),
+                          ('shflux', '>f4'),
+                          ('lhflux', '>f4'),
+                          ('ghflux', '>f4'),
+                          ('evap', '>f4'),
+                          ('eint', '>f4'),
+                          ('eveg', '>f4'),
+                          ('esoi', '>f4'),
+                          ('runoff', '>f4'),
+                          ('Tair', '>f4'),
+                          ('Qair', '>f4'),
+                          ('Psurf', '>f4'),
+                          ('RainF', '>f4'),
+                          ('Wind', '>f4'),
+                          ('LWdown', '>f4'),
+                          ('SWdown', '>f4'),
+                          ('lwup', '>f4'),
+                          ('swup', '>f4')])
+
     return dtype, hdr, length
 
 def template_smosL4SMaup():
